@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -100,17 +101,17 @@ public class HBaseRepository implements Serializable {
 	private Put generatePut(String rowKey, CoronaRecord record) {
 		Put put = new Put(Bytes.toBytes(rowKey));
 		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_COUNTRY.getBytes(),
-				Bytes.toBytes(record.getCountry()));
+				Bytes.toBytes(Optional.ofNullable(record.getCountry()).orElse("")));
 		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_STATE.getBytes(),
-				Bytes.toBytes(record.getState()));
+				Bytes.toBytes(Optional.ofNullable(record.getState()).orElse("")));
 		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_DATE.getBytes(),
-				Bytes.toBytes(record.getDate().format(FORMATER)));
+				Bytes.toBytes(Optional.ofNullable(record.getDate()).map(d -> d.format(FORMATER)).orElse("")));
 		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_CONFIRMED_CASES.getBytes(),
-				Bytes.toBytes(record.getConfirmedCases()));
+				Bytes.toBytes(Optional.ofNullable(record.getConfirmedCases()).orElse(0)));
 		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_RECOVERED_CASES.getBytes(),
-				Bytes.toBytes(record.getRecoveredCases()));
+				Bytes.toBytes(Optional.ofNullable(record.getRecoveredCases()).orElse(0)));
 		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_DEATH_CASES.getBytes(),
-				Bytes.toBytes(record.getDeathCases()));
+				Bytes.toBytes(Optional.ofNullable(record.getDeathCases()).orElse(0)));
 		return put;
 	}
 
