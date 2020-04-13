@@ -42,14 +42,6 @@ public class HBaseRepository implements Serializable {
 	public static final DateTimeFormatter FORMATER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 	public static final DateTimeFormatter FORMATER_2 = DateTimeFormatter.ofPattern("MMddyyyy");
 
-//	private PairFunction<CoronaRecord, ImmutableBytesWritable, Put> PAIR_CREATOR = (record) -> {
-//		String key = Stream.of(record.getCountry(), record.getState(), record.getDate().format(FORMATER))
-//		.map(v -> v.replaceAll("\\s+", ""))
-//		.collect(Collectors.joining("|"));
-//		Put put = generatePut(key, record);
-//		return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
-//	};
-	
 	private static HBaseRepository INSTANCE;
 
 	private HBaseRepository() {
@@ -63,9 +55,12 @@ public class HBaseRepository implements Serializable {
 	}
 
 	private void init() {
-		try (Connection connection = ConnectionFactory.createConnection(HBaseConfiguration.create()); Admin admin = connection.getAdmin()) {
+		try (Connection connection = ConnectionFactory.createConnection(HBaseConfiguration.create()); 
+				Admin admin = connection.getAdmin()) {
+			
 			HTableDescriptor table = new HTableDescriptor(TableName.valueOf(HBaseConfig.TABLE_NAME));
 			table.addFamily(new HColumnDescriptor(HBaseConfig.COLUMN_FAMILY).setCompressionType(Algorithm.NONE));
+			
 			if (!admin.tableExists(table.getTableName())) {
 				LOGGER.info("Creating table ...");
 				admin.createTable(table);
