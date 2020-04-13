@@ -7,7 +7,7 @@ public class KafkaConfig {
 	public static final String KAFKA_BROKERS = "127.0.0.1:9092";
 	public static final Integer MESSAGE_COUNT = 1000;
 	public static final String CLIENT_ID = "client1";
-	public static final String TOPIC_NAME = "demo";
+	public static final String TOPIC_NAME = "corona_cases";
 	public static final String GROUP_ID_CONFIG = "cGroup1";
 	public static final Integer MAX_NO_MESSAGE_FOUND_COUNT = 100;
 	public static final String OFFSET_RESET_LATEST = "latest";
