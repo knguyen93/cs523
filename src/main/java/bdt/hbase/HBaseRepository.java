@@ -93,10 +93,12 @@ public class HBaseRepository implements Serializable {
 		List<CoronaRecord> records = new ArrayList<>();
 		if (!isTableExist(HBaseConfig.TABLE_NAME)) return records;
 		LOGGER.info("================== SCANNING DATA=====================");
+		System.out.println("================== SCANNING DATA=====================");
 		Scan s = new Scan(); CoronaRecord record;
 		try (Table table = HBaseConfig.getHBaseConnection().getTable(TableName.valueOf(HBaseConfig.TABLE_NAME)); 
 				ResultScanner scanner = table.getScanner(s)) {
 			Result result = scanner.next();
+			System.out.println("================================== DEBBUG ====== " + result.toString());
 			while(result != null) {
 				record = parseResult(result);
 				if (record != null) {
@@ -107,6 +109,8 @@ public class HBaseRepository implements Serializable {
 		}
 		LOGGER.info("================== SCANNING DATA DONE !!! =====================");
 		LOGGER.info("================== TOTAL DATA =====================: " + records.size());
+		System.out.println("================== SCANNING DATA DONE !!! =====================");
+		System.out.println("================== TOTAL DATA =====================: " + records.size());
 		return records;
 	}
 	

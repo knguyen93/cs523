@@ -22,6 +22,7 @@ public class CoronaAnalysisApp {
 	
 	public static void init() throws IOException {
 		LOGGER.info("================== INTIAL APPLICATION DATA ====================");
+		System.out.println("================== INTIAL APPLICATION DATA ====================");
 		HBaseRepository db = HBaseRepository.getInstance();
 		sparkSession = SparkSession.builder()
 				.appName("Spark SQL")
@@ -53,7 +54,7 @@ public class CoronaAnalysisApp {
 	public static void printCasesForCountryByDates() {
 		String query =  " SELECT country, date, COUNT(*) FROM " + HBaseConfig.TABLE_NAME 
 				  + " GROUP BY country, date"
-				  + " ORDER BY country DESC AND date DESC ";
+				  + " ORDER BY country DESC, date DESC ";
 		
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		sqlDF.show();
