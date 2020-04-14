@@ -159,7 +159,7 @@ public class HBaseRepository implements Serializable {
 	
 	private boolean isTableExist(String tableName) throws IOException {
 		try (Admin admin = HBaseConfig.getHBaseConnection().getAdmin()) {
-			return !admin.tableExists(TableName.valueOf(tableName));
+			return admin.tableExists(TableName.valueOf(tableName));
 		}
 	}
 	
