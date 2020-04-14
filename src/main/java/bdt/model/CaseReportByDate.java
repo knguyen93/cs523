@@ -11,12 +11,12 @@ import java.io.Serializable;
 public class CaseReportByDate implements Serializable, CaseReport {
 	private static final long serialVersionUID = 1L;
 	private String date;
-	private int count;
+	private long count;
 
 	public CaseReportByDate() {
 	}
 
-	public CaseReportByDate(String date, int count) {
+	public CaseReportByDate(String date, long count) {
 		this.date = date;
 		this.count = count;
 	}
@@ -25,11 +25,11 @@ public class CaseReportByDate implements Serializable, CaseReport {
 		return date;
 	}
 
-	public int getCount() {
+	public long getCount() {
 		return count;
 	}
 
-	public void setCount(int count) {
+	public void setCount(long count) {
 		this.count = count;
 	}
 

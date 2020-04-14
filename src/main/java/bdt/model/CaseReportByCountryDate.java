@@ -11,21 +11,21 @@ import java.io.Serializable;
 public class CaseReportByCountryDate implements Serializable, CaseReport {
 	private static final long serialVersionUID = 1L;
 	private String country;
-	private int count;
+	private long count;
 
 	public CaseReportByCountryDate() {
 	}
 
-	public CaseReportByCountryDate(String country, int count) {
+	public CaseReportByCountryDate(String country, long count) {
 		this.country = country;
 		this.count = count;
 	}
 
-	public int getCount() {
+	public long getCount() {
 		return count;
 	}
 
-	public void setCount(int count) {
+	public void setCount(long count) {
 		this.count = count;
 	}
 

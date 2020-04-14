@@ -12,22 +12,22 @@ public class CaseReportByCountry implements Serializable, CaseReport {
 	private static final long serialVersionUID = 1L;
 	private String country;
 	private String date;
-	private int count;
+	private long count;
 
 	public CaseReportByCountry() {
 	}
 
-	public CaseReportByCountry(String country, int count, String date) {
+	public CaseReportByCountry(String country, long count, String date) {
 		this.country = country;
 		this.count = count;
 		this.date = date;
 	}
 
-	public int getCount() {
+	public long getCount() {
 		return count;
 	}
 
-	public void setCount(int count) {
+	public void setCount(long count) {
 		this.count = count;
 	}
 
