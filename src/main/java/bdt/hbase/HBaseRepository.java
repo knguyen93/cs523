@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -40,8 +41,8 @@ public class HBaseRepository implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(HBaseRepository.class);
-	public static final DateTimeFormatter FORMATER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-	public static final DateTimeFormatter FORMATER_2 = DateTimeFormatter.ofPattern("MMddyyyy");
+	public static final DateTimeFormatter FORMATER = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+	public static final DateTimeFormatter FORMATER_2 = DateTimeFormatter.ofPattern("yyyyMMdd");
 
 	private static HBaseRepository INSTANCE;
 
@@ -94,24 +95,14 @@ public class HBaseRepository implements Serializable {
 		}
 	}
 
-	private byte[] getValue(Result result, String columnFamily, String columnName) {
-		return result.getValue(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
-	}
-
 	private Put generatePut(String rowKey, CoronaRecord record) {
 		Put put = new Put(Bytes.toBytes(rowKey));
-		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_COUNTRY.getBytes(),
-				Bytes.toBytes(Optional.ofNullable(record.getCountry()).orElse("")));
-		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_STATE.getBytes(),
-				Bytes.toBytes(Optional.ofNullable(record.getState()).orElse("")));
-		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_DATE.getBytes(),
-				Bytes.toBytes(Optional.ofNullable(record.getDate()).map(d -> d.format(FORMATER)).orElse("")));
-		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_CONFIRMED_CASES.getBytes(),
-				Bytes.toBytes(Optional.ofNullable(record.getConfirmedCases()).orElse(0)));
-		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_RECOVERED_CASES.getBytes(),
-				Bytes.toBytes(Optional.ofNullable(record.getRecoveredCases()).orElse(0)));
-		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_DEATH_CASES.getBytes(),
-				Bytes.toBytes(Optional.ofNullable(record.getDeathCases()).orElse(0)));
+		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_COUNTRY.getBytes(), parseValue(record.getCountry()));
+		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_STATE.getBytes(), parseValue(record.getState()));
+		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_DATE.getBytes(), parseValue(record.getDate()));
+		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_CONFIRMED_CASES.getBytes(), parseValue(record.getConfirmedCases()));
+		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_RECOVERED_CASES.getBytes(), parseValue(record.getRecoveredCases()));
+		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_DEATH_CASES.getBytes(), parseValue(record.getDeathCases()));
 		return put;
 	}
 
@@ -123,16 +114,34 @@ public class HBaseRepository implements Serializable {
 		hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());
 	}
 	
+	private byte[] getValue(Result result, String columnFamily, String columnName) {
+		return result.getValue(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+	}
+	
+	private byte[] parseValue(String value) {
+		return Optional.ofNullable(value).orElse("").getBytes();
+	}
+	
+	private byte[] parseValue(int value) {
+		return Bytes.toBytes(value);
+	}
+	
+	private byte[] parseValue(LocalDate value) {
+		return Optional.ofNullable(value).map(v -> v.format(FORMATER)).orElse("").getBytes();
+	}
+	
 	class MyPair implements PairFunction<CoronaRecord, ImmutableBytesWritable, Put> {
 		private static final long serialVersionUID = 1L;
 
 		@Override
 		public Tuple2<ImmutableBytesWritable, Put> call(CoronaRecord record) throws Exception {
-			String date = record.getDate() != null ? record.getDate().format(FORMATER) : "";
+			String date = record.getDate() != null ? record.getDate().format(FORMATER_2) : "";
 			String key = Stream.of(record.getCountry(), record.getState(), date)
+					.filter(StringUtils::isNotBlank)
 					.map(v -> v.replaceAll("\\s+", ""))
 					.collect(Collectors.joining("|"));
 					Put put = generatePut(key, record);
+					
 					return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
 		}
 		

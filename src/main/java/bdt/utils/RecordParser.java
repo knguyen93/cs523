@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,8 +28,16 @@ import scala.Tuple2;
 public class RecordParser {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RecordParser.class);
-	public static final DateTimeFormatter FORMATER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	public static final DateTimeFormatter FORMATER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	public static final DateTimeFormatter FORMATER_2 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+	public static final DateTimeFormatter FORMATER_3 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	public static final DateTimeFormatter FORMATER_4 = DateTimeFormatter.ofPattern("MM/dd/yy");
+	public static final DateTimeFormatter FORMATER_5 = DateTimeFormatter.ofPattern("M/dd/yy");
+	public static final DateTimeFormatter FORMATER_6 = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+	public static final DateTimeFormatter FORMATER_7 = DateTimeFormatter.ofPattern("M/dd/yyyy");
+	public static final DateTimeFormatter FORMATER_8 = DateTimeFormatter.ofPattern("M/d/yyyy");
+	public static final DateTimeFormatter FORMATER_9 = DateTimeFormatter.ofPattern("M/d/yy");
+	
 	private static final String DELIMETER = "\t";
 	private static final CSVParser PARSER = new CSVParserBuilder().withSeparator(',').withQuoteChar('"').build();
 
@@ -40,7 +49,6 @@ public class RecordParser {
 				return null;
 
 			// Headers: Province/State, Country/Region, Last Update, Confirmed, Deaths, Recovered, Latitude, Longitude
-
 			String state = fields[0];
 			String country = fields[1];
 			LocalDate date = parseDate(fields[2]);
@@ -51,7 +59,7 @@ public class RecordParser {
 			return new CoronaRecord.CoronaRecordBuilder()
 					.from(state, country, date, confirmedCases, deathCases, recoveredCases).build();
 		} catch (Exception e) {
-			LOGGER.warn("Cannot parse record. [" + line + "]" + e);
+			LOGGER.warn("Cannot parse record. [" + line + "] " + e);
 			return null;
 		}
 	}
@@ -59,18 +67,20 @@ public class RecordParser {
 	public static LocalDate parseDate(String value) {
 		if (StringUtils.isBlank(value))
 			return null;
-
-		try {
-			return LocalDate.parse(value, FORMATER);
-		} catch (DateTimeParseException e) {
+		String dateStr = value.split(" ")[0];
+		
+		List<DateTimeFormatter> formaters = Arrays.asList(FORMATER, FORMATER_2, FORMATER_3, FORMATER_4, FORMATER_5, FORMATER_6, FORMATER_7, FORMATER_8, FORMATER_9);
+		
+		for (DateTimeFormatter formater : formaters) {
 			try {
-				return LocalDate.parse(value, FORMATER_2);
-			} catch (DateTimeParseException ex) {
-				return null;
+				return LocalDate.parse(dateStr, formater);
+			} catch(DateTimeParseException ex) {
 			}
 		}
+		
+		return null;
 	}
-
+	
 	public static CoronaRecord parse(Tuple2<String, String> tuple2) {
 		return parse(tuple2._2());
 	}
