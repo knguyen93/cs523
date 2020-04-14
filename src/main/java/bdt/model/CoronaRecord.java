@@ -18,10 +18,10 @@ public class CoronaRecord implements Serializable {
 	private int deathCases;
 	private int recoveredCases;
 
-	private CoronaRecord() {
+	public CoronaRecord() {
 	}
 
-	private CoronaRecord(String state, String country, LocalDate date, int confirmedCases, int deathCases,
+	public CoronaRecord(String state, String country, LocalDate date, int confirmedCases, int deathCases,
 			int recoveredCases) {
 		this.state = state;
 		this.country = country;
@@ -55,6 +55,30 @@ public class CoronaRecord implements Serializable {
 		return recoveredCases;
 	}
 	
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public void setDate(LocalDate date) {
+		this.date = date;
+	}
+
+	public void setConfirmedCases(int confirmedCases) {
+		this.confirmedCases = confirmedCases;
+	}
+
+	public void setDeathCases(int deathCases) {
+		this.deathCases = deathCases;
+	}
+
+	public void setRecoveredCases(int recoveredCases) {
+		this.recoveredCases = recoveredCases;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -93,67 +117,5 @@ public class CoronaRecord implements Serializable {
 	public String toString() {
 		return "CoronaRecord [state=" + state + ", country=" + country + ", date=" + date + ", confirmedCases="
 				+ confirmedCases + ", deathCases=" + deathCases + ", recoveredCases=" + recoveredCases + "]";
-	}
-
-	/**
-	 * Corona Record Builder
-	 * 
-	 * @author khanhnguyen
-	 *
-	 */
-	public static class CoronaRecordBuilder implements Serializable {
-		private static final long serialVersionUID = 1L;
-
-		private String state;
-		private String country;
-		private LocalDate date;
-		private int confirmedCases;
-		private int deathCases;
-		private int recoveredCases;
-
-		public CoronaRecordBuilder from(String state, String country, LocalDate date, int confirmedCases,
-				int deathCases, int recoveredCases) {
-			this.state = state;
-			this.country = country;
-			this.date = date;
-			this.confirmedCases = confirmedCases;
-			this.deathCases = deathCases;
-			this.recoveredCases = recoveredCases;
-			return this;
-		}
-
-		public CoronaRecord build() {
-			return new CoronaRecord(state,country,date,confirmedCases,deathCases,recoveredCases);
-		}
-
-		public CoronaRecordBuilder state(String state) {
-			this.state = state;
-			return this;
-		}
-
-		public CoronaRecordBuilder country(String country) {
-			this.country = country;
-			return this;
-		}
-
-		public CoronaRecordBuilder date(LocalDate date) {
-			this.date = date;
-			return this;
-		}
-
-		public CoronaRecordBuilder confirmedCases(int confirmedCases) {
-			this.confirmedCases = confirmedCases;
-			return this;
-		}
-
-		public CoronaRecordBuilder deathCases(int deathCases) {
-			this.deathCases = deathCases;
-			return this;
-		}
-
-		public CoronaRecordBuilder recoveredCases(int recoveredCases) {
-			this.recoveredCases = recoveredCases;
-			return this;
-		}
 	}
 }

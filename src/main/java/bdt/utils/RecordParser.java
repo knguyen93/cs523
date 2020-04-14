@@ -56,8 +56,7 @@ public class RecordParser {
 			int deathCases = StringUtils.isNotBlank(fields[4]) ? Integer.parseInt(fields[4]) : 0;
 			int recoveredCases = StringUtils.isNotBlank(fields[5]) ? Integer.parseInt(fields[5]) : 0;
 
-			return new CoronaRecord.CoronaRecordBuilder()
-					.from(state, country, date, confirmedCases, deathCases, recoveredCases).build();
+			return new CoronaRecord(state, country, date, confirmedCases, deathCases, recoveredCases);
 		} catch (Exception e) {
 			LOGGER.warn("Cannot parse record. [" + line + "] " + e);
 			return null;
