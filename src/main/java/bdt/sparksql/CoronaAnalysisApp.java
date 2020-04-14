@@ -17,6 +17,10 @@ import org.slf4j.LoggerFactory;
 import bdt.config.HBaseConfig;
 import bdt.config.SparkConfig;
 import bdt.hbase.HBaseRepository;
+import bdt.model.CaseReport;
+import bdt.model.CaseReportByCountry;
+import bdt.model.CaseReportByCountryDate;
+import bdt.model.CaseReportByDate;
 import bdt.model.HBCoronaRecord;
 
 public class CoronaAnalysisApp {
@@ -39,40 +43,40 @@ public class CoronaAnalysisApp {
 	}
 
 	public static void printTotalCasesByDate() {
-		String query =  " SELECT date, COUNT(*) FROM " + HBaseConfig.TABLE_NAME 
+		String query =  " SELECT date, COUNT(*) AS count FROM " + HBaseConfig.TABLE_NAME 
 					  + " GROUP BY date"
 					  + " ORDER BY date DESC ";
 		
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		sqlDF.show();
-		List<HBCoronaRecord> records = sqlDF.as(Encoders.bean(HBCoronaRecord.class)).collectAsList();
+		List<CaseReportByDate> records = sqlDF.as(Encoders.bean(CaseReportByDate.class)).collectAsList();
 		saveRecordsToFile(HBaseConfig.CASES_BY_DATE, records);
 	}
 	
 	public static void printTotalCasesByCountry() {
-		String query =  " SELECT country, COUNT(*) FROM " + HBaseConfig.TABLE_NAME 
+		String query =  " SELECT country, COUNT(*) AS count FROM " + HBaseConfig.TABLE_NAME 
 				  + " GROUP BY country"
 				  + " ORDER BY country DESC ";
 		
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		sqlDF.show();
-		List<HBCoronaRecord> records = sqlDF.as(Encoders.bean(HBCoronaRecord.class)).collectAsList();
+		List<CaseReportByCountry> records = sqlDF.as(Encoders.bean(CaseReportByCountry.class)).collectAsList();
 		saveRecordsToFile(HBaseConfig.CASES_BY_COUNTRY, records);
 	}
 	
 	public static void printCasesForCountryByDates() {
-		String query =  " SELECT country, date, COUNT(*) FROM " + HBaseConfig.TABLE_NAME 
+		String query =  " SELECT country, date, COUNT(*) AS count FROM " + HBaseConfig.TABLE_NAME 
 				  + " GROUP BY country, date"
 				  + " ORDER BY country DESC, date DESC ";
 		
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		sqlDF.show();
 		
-		List<HBCoronaRecord> records = sqlDF.as(Encoders.bean(HBCoronaRecord.class)).collectAsList();
+		List<CaseReportByCountryDate> records = sqlDF.as(Encoders.bean(CaseReportByCountryDate.class)).collectAsList();
 		saveRecordsToFile(HBaseConfig.CASES_BY_COUNTRY_DATE, records);
 	}
 	
-	public static void saveRecordsToFile(String tableName, List<HBCoronaRecord> records) {
+	public static void saveRecordsToFile(String tableName, List<? extends CaseReport> records) {
 		LOGGER.info("================== PERSISTING ANALYSIS DATA ... =====================");
 		String fileName = new StringBuilder()
 				.append("corona_output/")
