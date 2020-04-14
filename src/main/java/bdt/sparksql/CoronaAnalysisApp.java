@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Scanner;
 
 import org.apache.log4j.BasicConfigurator;
+import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
@@ -85,7 +87,8 @@ public class CoronaAnalysisApp {
 				.append(".csv")
 				.toString();
 		
-		SparkConfig.getSparkContext().parallelize(records).saveAsTextFile(fileName);
+		JavaSparkContext sparkContext = JavaSparkContext.fromSparkContext(sparkSession.sparkContext());
+		sparkContext.parallelize(records).saveAsTextFile(fileName);
 		LOGGER.info("================== PERSISTED ANALYSIS DATA at: " + fileName);
 	}
 	
