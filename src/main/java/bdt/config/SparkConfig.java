@@ -7,17 +7,12 @@ public class SparkConfig {
 	public static final String APP_NAME = "CoronaSpark";
 	public static final String MASTER_LOCAL = "local";
 
-	private static JavaSparkContext sparkContext;
+	private static final SparkConf sparkConf = new SparkConf()
+			.setAppName(APP_NAME)
+			.setMaster(MASTER_LOCAL);
+	private static final JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
 	
 	public static JavaSparkContext getSparkContext() {
-		if (sparkContext == null) {
-			SparkConf sparkConf = new SparkConf()
-					.setAppName(APP_NAME)
-					.setMaster(MASTER_LOCAL);
-			
-			sparkContext = new JavaSparkContext(sparkConf);
-		}
-		
 		return sparkContext;
 	}
 }
