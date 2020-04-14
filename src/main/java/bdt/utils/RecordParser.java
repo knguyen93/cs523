@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.BasicConfigurator;
+import org.apache.spark.api.java.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,7 +108,7 @@ public class RecordParser {
 		CaseReportByCountryDate result = new CaseReportByCountryDate();
 		result.setCount(record.getCount());
 		result.setDate(record.getDate());
-		result.setCountry(transformMap.get(record.getCountry()));
+		result.setCountry(Optional.ofNullable(transformMap.get(record.getCountry())).orElse(record.getCountry()));
 		return result;
 	}
 

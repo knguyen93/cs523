@@ -109,9 +109,10 @@ public class HBaseRepository implements Serializable {
 					puts = records.stream().map(r -> generateReportPut((CaseReportByCountry)r)).collect(Collectors.toList());
 					break;
 				case PILOT:
-					Map<String, String> countryMap = new HashMap<>();
+					Map<String, String> countryMap = generateCountryMap();
 					puts = records.stream()
 							.map(r -> RecordParser.transformPilot((CaseReportByCountryDate)r, countryMap))
+							.filter(r -> countryMap.values().contains(r.getCountry()))
 							.map(this::generatePilotReportPut)
 							.collect(Collectors.toList());
 					break;
@@ -170,10 +171,19 @@ public class HBaseRepository implements Serializable {
 		}
 	}
 	
+	private Map<String, String> generateCountryMap() {
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("United Kingdom", "UK");
+		map.put("United State", "US");
+		map.put("Japan", "JP");
+		map.put("South Korea", "KR");
+		map.put("Mainland China", "CN");
+		return map;
+	}
+	
 	private Put generatePilotReportPut(CaseReportByCountryDate record) {
 		Put put = new Put(Bytes.toBytes(record.getDate().replaceAll("/", "")));
-		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNTRY.getBytes(), parseValue(record.getCountry()));
-		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNT.getBytes(), parseValue(String.valueOf(record.getCount())));
+		put.addImmutable(HBaseConfig.COL_COUNTRY.getBytes(), parseValue(record.getCountry()), parseValue(String.valueOf(record.getCount())));
 		return put;
 	}
 	
