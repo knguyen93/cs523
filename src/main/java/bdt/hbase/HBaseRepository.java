@@ -110,11 +110,13 @@ public class HBaseRepository implements Serializable {
 					break;
 				case PILOT:
 					Map<String, String> countryMap = generateCountryMap();
+					LOGGER.info("================== PILOT COUNTRIES: " + countryMap.values());
 					puts = records.stream()
 							.map(r -> RecordParser.transformPilot((CaseReportByCountryDate)r, countryMap))
 							.filter(r -> countryMap.values().contains(r.getCountry()))
 							.map(this::generatePilotReportPut)
 							.collect(Collectors.toList());
+					LOGGER.info("================== TOTAL CASES PILOT DATA: " + puts.size());
 					break;
 				case CASES_BY_DATE:
 					puts = records.stream().map(r -> generateReportPut((CaseReportByDate)r)).collect(Collectors.toList());

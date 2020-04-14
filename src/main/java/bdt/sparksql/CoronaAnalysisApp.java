@@ -65,6 +65,7 @@ public class CoronaAnalysisApp {
 	}
 	
 	public static void generateTotalCasesPilot() {
+		LOGGER.info("================== GENERATE TOTAL CASES PILOT DATA ... =====================");
 		String query =  " SELECT country, date, COUNT(*) AS count FROM " + HBaseConfig.TABLE_NAME 
 				  + " GROUP BY country, date"
 				  + " ORDER BY country DESC, date DESC ";
@@ -112,6 +113,7 @@ public class CoronaAnalysisApp {
 		System.out.println("2. Show total Cases by Country");
 		System.out.println("3. Show total Cases by Country and Date");
 		System.out.println("4. Enter custom query");
+		System.out.println("5. Generate Pilot data");
 		System.out.println("Type 'exit' to stop program.");
 		System.out.println("Your option: ");
 	}
@@ -140,6 +142,9 @@ public class CoronaAnalysisApp {
 						System.out.println("Enter your query: ");
 						String queryStr = scanner.nextLine();
 						printCustomQuery(queryStr);
+						break;
+					case "5":
+						generateTotalCasesPilot();
 						break;
 					case "exit":
 						System.exit(1);
