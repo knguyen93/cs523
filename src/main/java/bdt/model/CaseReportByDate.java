@@ -39,6 +39,6 @@ public class CaseReportByDate implements Serializable, CaseReport {
 
 	@Override
 	public String toString() {
-		return "CaseReportByDate [date=" + date + ", count=" + count + "]";
+		return date + ", " + count;
 	}
 }

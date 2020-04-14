@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Scanner;
 
 import org.apache.log4j.BasicConfigurator;
-import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
@@ -52,7 +51,14 @@ public class CoronaAnalysisApp {
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		sqlDF.show();
 		List<CaseReportByDate> records = sqlDF.as(Encoders.bean(CaseReportByDate.class)).collectAsList();
-		saveRecordsToFile(HBaseConfig.CASES_BY_DATE, records);
+		
+		try {
+			HBaseRepository.getInstance().saveAnalysis(records);
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage());
+		}
+		
+		//saveRecordsToFile(HBaseConfig.CASES_BY_DATE, records);
 	}
 	
 	public static void printTotalCasesByCountry() {

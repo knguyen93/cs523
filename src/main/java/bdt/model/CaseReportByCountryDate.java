@@ -39,7 +39,7 @@ public class CaseReportByCountryDate implements Serializable, CaseReport {
 
 	@Override
 	public String toString() {
-		return "CaseReportByCountry [country=" + country + ", count=" + count + "]";
+		return country + ", " + count;
 	}
 
 }

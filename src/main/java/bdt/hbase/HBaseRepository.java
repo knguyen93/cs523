@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bdt.config.HBaseConfig;
+import bdt.model.CaseReportByDate;
 import bdt.model.CoronaRecord;
 import bdt.model.HBCoronaRecord;
 import scala.Tuple2;
@@ -88,6 +89,22 @@ public class HBaseRepository implements Serializable {
 		job.setOutputFormatClass(TableOutputFormat.class);
 		JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = record.mapToPair(new MyPair());
 		hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());
+	}
+	
+	public void saveAnalysis(List<CaseReportByDate> records) throws MasterNotRunningException, Exception {
+		createAnalysisTable(HBaseConfig.CASES_BY_DATE);
+		
+		try (Table table = HBaseConfig.getHBaseConnection().getTable(TableName.valueOf(HBaseConfig.CASES_BY_DATE))) {
+			List<Put> puts = records.stream().map(HBaseRepository::generateReportPut).collect(Collectors.toList());
+			table.put(puts);
+		}
+	}
+	
+	private static Put generateReportPut(CaseReportByDate record) {
+		Put put = new Put(Bytes.toBytes(record.getDate()));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_DATE.getBytes(), Bytes.toBytes(record.getDate()));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNT.getBytes(), Bytes.toBytes(record.getCount()));
+		return put;
 	}
 	
 	public List<HBCoronaRecord> scanRecords() throws IOException {
