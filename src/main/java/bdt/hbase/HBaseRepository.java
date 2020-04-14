@@ -143,7 +143,7 @@ public class HBaseRepository implements Serializable {
 		byte[] recoveredCases = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_RECOVERED_CASES);
 		byte[] deathCases = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_DEATH_CASES);
 
-		return new HBCoronaRecord(state.toString(), country.toString(), date.toString(),
+		return new HBCoronaRecord(Bytes.toString(state), Bytes.toString(country), Bytes.toString(date),
 						Bytes.toInt(confirmedCases), Bytes.toInt(deathCases), Bytes.toInt(recoveredCases));
 	}
 
