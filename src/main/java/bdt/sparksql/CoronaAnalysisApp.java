@@ -1,7 +1,7 @@
 package bdt.sparksql;
 
 import java.io.IOException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
@@ -26,7 +26,7 @@ import bdt.model.HBCoronaRecord;
 public class CoronaAnalysisApp {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CoronaAnalysisApp.class);
-	public static final DateTimeFormatter FORMATER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+	public static final DateTimeFormatter FORMATER = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH");
 	private static SparkSession sparkSession;
 	
 	public static void init() throws IOException {
@@ -81,7 +81,7 @@ public class CoronaAnalysisApp {
 		String fileName = new StringBuilder()
 				.append("corona_output/")
 				.append(tableName).append("_")
-				.append(LocalDate.now().format(FORMATER))
+				.append(LocalDateTime.now().toString())
 				.append(".csv")
 				.toString();
 		
