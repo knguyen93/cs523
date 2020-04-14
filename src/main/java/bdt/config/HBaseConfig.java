@@ -26,10 +26,6 @@ public class HBaseConfig {
 	/**
 	 * Analysis Tables
 	 */
-	public static final String CASES_BY_COUNTRY = "cases_by_country";
-	public static final String CASES_BY_DATE = "cases_by_date";
-	public static final String CASES_BY_COUNTRY_DATE = "cases_by_country_date";
-	
 	public static final String ANALYSIS_COL_FAMILY = "ana";
 	public static final String COL_COUNT = "total_cases";
 	

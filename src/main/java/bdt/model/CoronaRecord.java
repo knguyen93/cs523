@@ -20,6 +20,11 @@ public class CoronaRecord implements Serializable {
 
 	public CoronaRecord() {
 	}
+	
+	public CoronaRecord(String country) {
+		this.country = country;
+	}
+
 
 	public CoronaRecord(String state, String country, LocalDate date, int confirmedCases, int deathCases,
 			int recoveredCases) {

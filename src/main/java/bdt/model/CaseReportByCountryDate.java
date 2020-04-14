@@ -8,17 +8,26 @@ import java.io.Serializable;
  * @author khanhnguyen
  *
  */
-public class CaseReportByCountryDate implements Serializable, CaseReport {
+public class CaseReportByCountryDate extends CaseReport implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String country;
+	private String date;
 	private long count;
 
 	public CaseReportByCountryDate() {
 	}
 
-	public CaseReportByCountryDate(String country, long count) {
+	public CaseReportByCountryDate(String country, String date, long count) {
 		this.country = country;
 		this.count = count;
+	}
+	
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
 	}
 
 	public long getCount() {
@@ -39,7 +48,13 @@ public class CaseReportByCountryDate implements Serializable, CaseReport {
 
 	@Override
 	public String toString() {
-		return country + ", " + count;
+		return new StringBuilder()
+				.append(country)
+				.append(",")
+				.append(date)
+				.append(",")
+				.append(count)
+				.toString();
 	}
 
 }

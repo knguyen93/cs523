@@ -16,6 +16,7 @@ import bdt.config.KafkaConfig;
 import bdt.config.SparkConfig;
 import bdt.hbase.HBaseRepository;
 import bdt.model.CoronaRecord;
+import bdt.sparksql.CoronaAnalysisApp;
 import bdt.utils.RecordParser;
 import kafka.serializer.StringDecoder;
 
@@ -28,7 +29,7 @@ public class KConsumer {
 		Configuration hadoopConf = sc.hadoopConfiguration();
 		HBaseRepository repo = HBaseRepository.getInstance();
 
-		try (JavaStreamingContext streamingContext = new JavaStreamingContext(sc, new Duration(5000));) {
+		try (JavaStreamingContext streamingContext = new JavaStreamingContext(sc, new Duration(5000))) {
 			JavaPairInputDStream<String, String> kafkaSparkPairInputDStream = KafkaUtils.createDirectStream(
 					streamingContext, String.class,
 					String.class, StringDecoder.class, StringDecoder.class, kafkaParams, topicName);
@@ -39,7 +40,12 @@ public class KConsumer {
 			
 			recoredRDDs.foreachRDD(rdd -> {
 				if (!rdd.isEmpty()) {
-					repo.save(hadoopConf, rdd);
+					if ("$$$".equals(rdd.map(r -> r.getCountry()).first())) {
+						CoronaAnalysisApp.init();
+						CoronaAnalysisApp.generateTotalCasesPilot();
+					} else {
+						repo.save(hadoopConf, rdd);
+					}
 				}
 			});
 
@@ -47,4 +53,5 @@ public class KConsumer {
 			streamingContext.awaitTermination();
 		}
 	}
+	
 }

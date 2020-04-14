@@ -8,7 +8,7 @@ import java.io.Serializable;
  * @author khanhnguyen
  *
  */
-public class CaseReportByDate implements Serializable, CaseReport {
+public class CaseReportByDate  extends CaseReport implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String date;
 	private long count;
@@ -39,6 +39,10 @@ public class CaseReportByDate implements Serializable, CaseReport {
 
 	@Override
 	public String toString() {
-		return date + ", " + count;
+		return new StringBuilder()
+				.append(date)
+				.append(",")
+				.append(count)
+				.toString();
 	}
 }

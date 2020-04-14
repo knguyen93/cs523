@@ -1,5 +1,5 @@
 package bdt.model;
 
-public interface CaseReport {
+public abstract class CaseReport {
 
 }

@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,6 +23,7 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 
+import bdt.model.CaseReportByCountryDate;
 import bdt.model.CoronaRecord;
 import scala.Tuple2;
 
@@ -45,6 +47,10 @@ public class RecordParser {
 		try {
 			String[] fields = PARSER.parseLine(line);
 
+			if ("$$$".equals(fields[0])) {
+				return new CoronaRecord("$$$");
+			}
+			
 			if (fields.length < 6)
 				return null;
 
@@ -95,6 +101,14 @@ public class RecordParser {
 
 			return lines.stream().map(RecordParser::joinFields).collect(Collectors.toList());
 		}
+	}
+	
+	public static CaseReportByCountryDate transformPilot(CaseReportByCountryDate record, Map<String, String> transformMap) {
+		CaseReportByCountryDate result = new CaseReportByCountryDate();
+		result.setCount(record.getCount());
+		result.setDate(record.getDate());
+		result.setCountry(transformMap.get(record.getCountry()));
+		return result;
 	}
 
 	/**

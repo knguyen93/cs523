@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
-
 import org.apache.log4j.BasicConfigurator;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
@@ -14,7 +13,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import bdt.config.AnalysisTable;
 import bdt.config.HBaseConfig;
 import bdt.config.SparkConfig;
 import bdt.hbase.HBaseRepository;
@@ -51,14 +50,7 @@ public class CoronaAnalysisApp {
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		sqlDF.show();
 		List<CaseReportByDate> records = sqlDF.as(Encoders.bean(CaseReportByDate.class)).collectAsList();
-		
-		try {
-			HBaseRepository.getInstance().saveAnalysis(records);
-		} catch (Exception e) {
-			LOGGER.error(e.getMessage());
-		}
-		
-		//saveRecordsToFile(HBaseConfig.CASES_BY_DATE, records);
+		HBaseRepository.getInstance().saveAnalysis(records, AnalysisTable.CASES_BY_DATE);
 	}
 	
 	public static void printTotalCasesByCountry() {
@@ -69,7 +61,17 @@ public class CoronaAnalysisApp {
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		sqlDF.show();
 		List<CaseReportByCountry> records = sqlDF.as(Encoders.bean(CaseReportByCountry.class)).collectAsList();
-		saveRecordsToFile(HBaseConfig.CASES_BY_COUNTRY, records);
+		HBaseRepository.getInstance().saveAnalysis(records, AnalysisTable.CASES_BY_COUNTRY);
+	}
+	
+	public static void generateTotalCasesPilot() {
+		String query =  " SELECT country, date, COUNT(*) AS count FROM " + HBaseConfig.TABLE_NAME 
+				  + " GROUP BY country, date"
+				  + " ORDER BY country DESC, date DESC ";
+		
+		Dataset<Row> sqlDF = sparkSession.sql(query);
+		List<CaseReportByCountry> records = sqlDF.as(Encoders.bean(CaseReportByCountry.class)).collectAsList();
+		HBaseRepository.getInstance().saveAnalysis(records, AnalysisTable.PILOT);
 	}
 	
 	public static void printCasesForCountryByDates() {
@@ -81,7 +83,7 @@ public class CoronaAnalysisApp {
 		sqlDF.show();
 		
 		List<CaseReportByCountryDate> records = sqlDF.as(Encoders.bean(CaseReportByCountryDate.class)).collectAsList();
-		saveRecordsToFile(HBaseConfig.CASES_BY_COUNTRY_DATE, records);
+		HBaseRepository.getInstance().saveAnalysis(records, AnalysisTable.CASES_BY_COUNTRY_DATE);
 	}
 	
 	public static void saveRecordsToFile(String tableName, List<? extends CaseReport> records) {

@@ -5,7 +5,9 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,10 +37,15 @@ import org.apache.spark.api.java.function.PairFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bdt.config.AnalysisTable;
 import bdt.config.HBaseConfig;
+import bdt.model.CaseReport;
+import bdt.model.CaseReportByCountry;
+import bdt.model.CaseReportByCountryDate;
 import bdt.model.CaseReportByDate;
 import bdt.model.CoronaRecord;
 import bdt.model.HBCoronaRecord;
+import bdt.utils.RecordParser;
 import scala.Tuple2;
 
 public class HBaseRepository implements Serializable {
@@ -91,20 +98,39 @@ public class HBaseRepository implements Serializable {
 		hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());
 	}
 	
-	public void saveAnalysis(List<CaseReportByDate> records) throws MasterNotRunningException, Exception {
-		createAnalysisTable(HBaseConfig.CASES_BY_DATE);
+	public void saveAnalysis(List<? extends CaseReport> records, AnalysisTable tableName) {
+		createAnalysisTable(tableName.value());
 		
-		try (Table table = HBaseConfig.getHBaseConnection().getTable(TableName.valueOf(HBaseConfig.CASES_BY_DATE))) {
-			List<Put> puts = records.stream().map(HBaseRepository::generateReportPut).collect(Collectors.toList());
-			table.put(puts);
-		}
-	}
+		try (Table table = HBaseConfig.getHBaseConnection().getTable(TableName.valueOf(tableName.value()))) {
+			List<Put> puts = null;
+			
+			switch (tableName) {
+				case CASES_BY_COUNTRY:
+					puts = records.stream().map(r -> generateReportPut((CaseReportByCountry)r)).collect(Collectors.toList());
+					break;
+				case PILOT:
+					Map<String, String> countryMap = new HashMap<>();
+					puts = records.stream()
+							.map(r -> RecordParser.transformPilot((CaseReportByCountryDate)r, countryMap))
+							.map(this::generatePilotReportPut)
+							.collect(Collectors.toList());
+					break;
+				case CASES_BY_DATE:
+					puts = records.stream().map(r -> generateReportPut((CaseReportByDate)r)).collect(Collectors.toList());
+					break;
+				case CASES_BY_COUNTRY_DATE:
+					puts = records.stream().map(r -> generateReportPut((CaseReportByCountryDate)r)).collect(Collectors.toList());
+					break;
 	
-	private static Put generateReportPut(CaseReportByDate record) {
-		Put put = new Put(Bytes.toBytes(record.getDate()));
-		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_DATE.getBytes(), Bytes.toBytes(record.getDate()));
-		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNT.getBytes(), Bytes.toBytes(record.getCount()));
-		return put;
+				default:
+					break;
+			}
+			
+			if (puts != null)
+				table.put(puts);
+		} catch (Exception e) {
+			LOGGER.error("Unable to save ananlysis data. " + e);
+		}
 	}
 	
 	public List<HBCoronaRecord> scanRecords() throws IOException {
@@ -142,6 +168,35 @@ public class HBaseRepository implements Serializable {
 		} catch (IOException ex) {
 			LOGGER.error(ex.getMessage());
 		}
+	}
+	
+	private Put generatePilotReportPut(CaseReportByCountryDate record) {
+		Put put = new Put(Bytes.toBytes(record.getDate().replaceAll("/", "")));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNTRY.getBytes(), parseValue(record.getCountry()));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNT.getBytes(), parseValue(String.valueOf(record.getCount())));
+		return put;
+	}
+	
+	private Put generateReportPut(CaseReportByDate record) {
+		Put put = new Put(Bytes.toBytes(record.getDate()));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_DATE.getBytes(), parseValue(record.getDate()));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNT.getBytes(), parseValue(String.valueOf(record.getCount())));
+		return put;
+	}
+	
+	private Put generateReportPut(CaseReportByCountry record) {
+		Put put = new Put(Bytes.toBytes(record.getCountry()));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNTRY.getBytes(), parseValue(record.getCountry()));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNT.getBytes(), parseValue(String.valueOf(record.getCount())));
+		return put;
+	}
+	
+	private Put generateReportPut(CaseReportByCountryDate record) {
+		Put put = new Put(Bytes.toBytes(record.getCountry() + record.getDate()));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNTRY.getBytes(), parseValue(record.getCountry()));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_DATE.getBytes(), parseValue(record.getDate()));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNT.getBytes(), parseValue(String.valueOf(record.getCount())));
+		return put;
 	}
 
 	private CoronaRecord parseResult(Result result) {
