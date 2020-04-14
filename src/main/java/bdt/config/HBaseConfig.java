@@ -22,19 +22,17 @@ public class HBaseConfig {
 	public static final String COL_DEATH_CASES = "deathCases";
 	public static final String COL_RECOVERED_CASES = "recoveredCases";
 	
-	public static final String CATALOG = "{\n" + 
-			"    \"table\":{\"namespace\":\"default\",\"name\":\"corona_cases\"},\n" + 
-			"    \"rowkey\":\"key\",\n" + 
-			"    \"columns\":{\n" + 
-			"        \"key\":{\"cf\":\"rowkey\",\"col\":\"key\",\"type\":\"string\"},\n" + 
-			"        \"country\":{\"cf\":\"cc\",\"col\":\"country\",\"type\":\"string\"},\n" + 
-			"        \"state\":{\"cf\":\"cc\",\"col\":\"state\",\"type\":\"string\"},\n" + 
-			"        \"confirmedCases\":{\"cf\":\"cc\",\"col\":\"confirmedCases\",\"type\":\"int\"},\n" + 
-			"        \"deathCases\":{\"cf\":\"cc\",\"col\":\"deathCases\",\"type\":\"string\"},\n" + 
-			"        \"recoveredCases\":{\"cf\":\"cc\",\"col\":\"recoveredCases\",\"type\":\"string\"},\n" + 
-			"        \"date\":{\"cf\":\"cc\",\"col\":\"date\",\"type\":\"string\"}\n" + 
-			"    }\n" + 
-			"}";
+	
+	/**
+	 * Analysis Tables
+	 */
+	public static final String CASES_BY_COUNTRY = "cases_by_country";
+	public static final String CASES_BY_DATE = "cases_by_date";
+	public static final String CASES_BY_COUNTRY_DATE = "cases_by_country_date";
+	
+	public static final String ANALYSIS_COL_FAMILY = "ana";
+	public static final String COL_COUNT = "total_cases";
+	
 	
 	private static Connection connection;
 	

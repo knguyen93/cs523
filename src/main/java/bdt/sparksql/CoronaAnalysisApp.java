@@ -1,10 +1,14 @@
 package bdt.sparksql;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Scanner;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
@@ -13,17 +17,16 @@ import org.slf4j.LoggerFactory;
 import bdt.config.HBaseConfig;
 import bdt.config.SparkConfig;
 import bdt.hbase.HBaseRepository;
-import bdt.model.CoronaRecord;
 import bdt.model.HBCoronaRecord;
 
 public class CoronaAnalysisApp {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CoronaAnalysisApp.class);
+	public static final DateTimeFormatter FORMATER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 	private static SparkSession sparkSession;
 	
 	public static void init() throws IOException {
-		LOGGER.info("================== INTIAL APPLICATION DATA ====================");
-		System.out.println("================== INTIAL APPLICATION DATA ====================");
+		LOGGER.info("================== INITIAL APPLICATION DATA ====================");
 		HBaseRepository db = HBaseRepository.getInstance();
 		sparkSession = SparkSession.builder()
 				.appName("Spark SQL")
@@ -32,6 +35,7 @@ public class CoronaAnalysisApp {
 		
 		sparkSession.createDataFrame(db.scanRecords(), HBCoronaRecord.class)
 		.createOrReplaceTempView(HBaseConfig.TABLE_NAME);
+		LOGGER.info("================== SPARK SESSION CREATED !!! ====================");
 	}
 
 	public static void printTotalCasesByDate() {
@@ -41,6 +45,8 @@ public class CoronaAnalysisApp {
 		
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		sqlDF.show();
+		List<HBCoronaRecord> records = sqlDF.as(Encoders.bean(HBCoronaRecord.class)).collectAsList();
+		saveRecordsToFile(HBaseConfig.CASES_BY_DATE, records);
 	}
 	
 	public static void printTotalCasesByCountry() {
@@ -50,6 +56,8 @@ public class CoronaAnalysisApp {
 		
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		sqlDF.show();
+		List<HBCoronaRecord> records = sqlDF.as(Encoders.bean(HBCoronaRecord.class)).collectAsList();
+		saveRecordsToFile(HBaseConfig.CASES_BY_COUNTRY, records);
 	}
 	
 	public static void printCasesForCountryByDates() {
@@ -59,6 +67,22 @@ public class CoronaAnalysisApp {
 		
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		sqlDF.show();
+		
+		List<HBCoronaRecord> records = sqlDF.as(Encoders.bean(HBCoronaRecord.class)).collectAsList();
+		saveRecordsToFile(HBaseConfig.CASES_BY_COUNTRY_DATE, records);
+	}
+	
+	public static void saveRecordsToFile(String tableName, List<HBCoronaRecord> records) {
+		LOGGER.info("================== PERSISTING ANALYSIS DATA ... =====================");
+		String fileName = new StringBuilder()
+				.append("corona_output/")
+				.append(tableName).append("_")
+				.append(LocalDate.now().format(FORMATER))
+				.append(".csv")
+				.toString();
+		
+		SparkConfig.getSparkContext().parallelize(records).saveAsTextFile(fileName);
+		LOGGER.info("================== PERSISTED ANALYSIS DATA at: " + fileName);
 	}
 	
 	public static void printCustomQuery(String queryStr) {
@@ -67,7 +91,7 @@ public class CoronaAnalysisApp {
 	}
 	
 	private static void printMenu() {
-		System.out.println("======================================");
+		System.out.println("================= Welcome to Corona Analysis Application  =====================");
 		System.out.println("Please select program:");
 		System.out.println("1. Show total Cases by Date");
 		System.out.println("2. Show total Cases by Country");
@@ -109,7 +133,7 @@ public class CoronaAnalysisApp {
 			}
 			
 		} catch (IOException e) {
-			LOGGER.info("================== APPLICATION DIE ====================");
+			LOGGER.info("================== PROCESSING TO EXIT APPLICATION ... ====================");
 			LOGGER.error("An error occur while running CoronaAnalysisApp. " + e);
 			System.exit(0);
 		}

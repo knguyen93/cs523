@@ -93,13 +93,11 @@ public class HBaseRepository implements Serializable {
 	public List<HBCoronaRecord> scanRecords() throws IOException {
 		List<HBCoronaRecord> records = new ArrayList<>();
 		if (!isTableExist(HBaseConfig.TABLE_NAME)) return records;
-		LOGGER.info("================== SCANNING DATA=====================");
-		System.out.println("================== SCANNING DATA=====================");
+		LOGGER.info("================== START SCANNING DATA ... =====================");
 		Scan s = new Scan(); HBCoronaRecord record;
 		try (Table table = HBaseConfig.getHBaseConnection().getTable(TableName.valueOf(HBaseConfig.TABLE_NAME)); 
 				ResultScanner scanner = table.getScanner(s)) {
 			Result result = scanner.next();
-			System.out.println("================================== DEBBUG ====== " + result.toString());
 			while(result != null) {
 				record = parseResultHB(result);
 				if (record != null) {
@@ -108,13 +106,27 @@ public class HBaseRepository implements Serializable {
 				result = scanner.next();
 			}
 		}
-		LOGGER.info("================== SCANNING DATA DONE !!! =====================");
+		LOGGER.info("================== SCANNING DATA: DONE !!! =====================");
 		LOGGER.info("================== TOTAL DATA =====================: " + records.size());
-		System.out.println("================== SCANNING DATA DONE !!! =====================");
-		System.out.println("================== TOTAL DATA =====================: " + records.size());
 		return records;
 	}
 	
+	public void createAnalysisTable(String tableName) {
+		try (Admin admin = HBaseConfig.getHBaseConnection().getAdmin()) {
+			TableName tblName = TableName.valueOf(tableName);
+			if (!admin.tableExists(tblName)) {
+				HTableDescriptor table = new HTableDescriptor(tblName);
+				table.addFamily(new HColumnDescriptor(HBaseConfig.ANALYSIS_COL_FAMILY).setCompressionType(Algorithm.NONE));
+				
+				LOGGER.info("================== Creating table ... =====================: " + tableName);
+				admin.createTable(table);
+				LOGGER.info("================== Table created !!! ===================== ");
+			}
+		} catch (IOException ex) {
+			LOGGER.error(ex.getMessage());
+		}
+	}
+
 	private CoronaRecord parseResult(Result result) {
 		if (result.isEmpty()) {
 			return null;
