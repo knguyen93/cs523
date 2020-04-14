@@ -162,7 +162,12 @@ public class HBaseRepository implements Serializable {
 			TableName tblName = TableName.valueOf(tableName);
 			if (!admin.tableExists(tblName)) {
 				HTableDescriptor table = new HTableDescriptor(tblName);
-				table.addFamily(new HColumnDescriptor(HBaseConfig.ANALYSIS_COL_FAMILY).setCompressionType(Algorithm.NONE));
+				
+				if (AnalysisTable.PILOT.value().equals(tableName)) {
+					table.addFamily(new HColumnDescriptor(HBaseConfig.COL_COUNTRY).setCompressionType(Algorithm.NONE));
+				} else {
+					table.addFamily(new HColumnDescriptor(HBaseConfig.ANALYSIS_COL_FAMILY).setCompressionType(Algorithm.NONE));
+				}
 				
 				LOGGER.info("================== Creating table ... =====================: " + tableName);
 				admin.createTable(table);
