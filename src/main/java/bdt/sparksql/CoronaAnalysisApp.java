@@ -71,7 +71,7 @@ public class CoronaAnalysisApp {
 				  + " ORDER BY country DESC, date DESC ";
 		
 		Dataset<Row> sqlDF = sparkSession.sql(query);
-		List<CaseReportByCountry> records = sqlDF.as(Encoders.bean(CaseReportByCountry.class)).collectAsList();
+		List<CaseReportByCountryDate> records = sqlDF.as(Encoders.bean(CaseReportByCountryDate.class)).collectAsList();
 		HBaseRepository.getInstance().saveAnalysis(records, AnalysisTable.PILOT);
 	}
 	
