@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import bdt.config.HBaseConfig;
 import bdt.model.CoronaRecord;
+import bdt.model.HBCoronaRecord;
 import scala.Tuple2;
 
 public class HBaseRepository implements Serializable {
@@ -89,18 +90,18 @@ public class HBaseRepository implements Serializable {
 		hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());
 	}
 	
-	public List<CoronaRecord> scanRecords() throws IOException {
-		List<CoronaRecord> records = new ArrayList<>();
+	public List<HBCoronaRecord> scanRecords() throws IOException {
+		List<HBCoronaRecord> records = new ArrayList<>();
 		if (!isTableExist(HBaseConfig.TABLE_NAME)) return records;
 		LOGGER.info("================== SCANNING DATA=====================");
 		System.out.println("================== SCANNING DATA=====================");
-		Scan s = new Scan(); CoronaRecord record;
+		Scan s = new Scan(); HBCoronaRecord record;
 		try (Table table = HBaseConfig.getHBaseConnection().getTable(TableName.valueOf(HBaseConfig.TABLE_NAME)); 
 				ResultScanner scanner = table.getScanner(s)) {
 			Result result = scanner.next();
 			System.out.println("================================== DEBBUG ====== " + result.toString());
 			while(result != null) {
-				record = parseResult(result);
+				record = parseResultHB(result);
 				if (record != null) {
 					records.add(record);
 				}
@@ -127,6 +128,22 @@ public class HBaseRepository implements Serializable {
 		byte[] deathCases = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_DEATH_CASES);
 
 		return new CoronaRecord(state.toString(), country.toString(), LocalDate.parse(date.toString(), FORMATER),
+						Bytes.toInt(confirmedCases), Bytes.toInt(deathCases), Bytes.toInt(recoveredCases));
+	}
+	
+	private HBCoronaRecord parseResultHB(Result result) {
+		if (result.isEmpty()) {
+			return null;
+		}
+
+		byte[] country = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_COUNTRY);
+		byte[] state = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_STATE);
+		byte[] date = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_DATE);
+		byte[] confirmedCases = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_CONFIRMED_CASES);
+		byte[] recoveredCases = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_RECOVERED_CASES);
+		byte[] deathCases = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_DEATH_CASES);
+
+		return new HBCoronaRecord(state.toString(), country.toString(), date.toString(),
 						Bytes.toInt(confirmedCases), Bytes.toInt(deathCases), Bytes.toInt(recoveredCases));
 	}
 

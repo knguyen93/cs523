@@ -14,6 +14,7 @@ import bdt.config.HBaseConfig;
 import bdt.config.SparkConfig;
 import bdt.hbase.HBaseRepository;
 import bdt.model.CoronaRecord;
+import bdt.model.HBCoronaRecord;
 
 public class CoronaAnalysisApp {
 
@@ -29,7 +30,7 @@ public class CoronaAnalysisApp {
 				.master(SparkConfig.MASTER_LOCAL)
 				.getOrCreate();
 		
-		sparkSession.createDataFrame(db.scanRecords(), CoronaRecord.class)
+		sparkSession.createDataFrame(db.scanRecords(), HBCoronaRecord.class)
 		.createOrReplaceTempView(HBaseConfig.TABLE_NAME);
 	}
 
