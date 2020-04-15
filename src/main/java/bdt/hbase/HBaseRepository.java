@@ -74,9 +74,9 @@ public class HBaseRepository implements Serializable {
 			table.addFamily(new HColumnDescriptor(HBaseConfig.COLUMN_FAMILY).setCompressionType(Algorithm.NONE));
 			
 			if (!admin.tableExists(table.getTableName())) {
-				LOGGER.info("Creating table ...");
+				LOGGER.info("================== Creating table 'corona_cases' ... ==================");
 				admin.createTable(table);
-				LOGGER.info("Table created!");
+				LOGGER.info("================== Table 'corona_cases' created! ==================");
 			}
 		} catch (IOException ex) {
 			LOGGER.error(ex.getMessage());
@@ -139,7 +139,7 @@ public class HBaseRepository implements Serializable {
 	public List<HBCoronaRecord> scanRecords() throws IOException {
 		List<HBCoronaRecord> records = new ArrayList<>();
 		if (!isTableExist(HBaseConfig.TABLE_NAME)) return records;
-		LOGGER.info("================== START SCANNING DATA ... =====================");
+		LOGGER.info("================== START SCANNING DATA from table corona_cases... =====================");
 		Scan s = new Scan(); HBCoronaRecord record;
 		try (Table table = HBaseConfig.getHBaseConnection().getTable(TableName.valueOf(HBaseConfig.TABLE_NAME)); 
 				ResultScanner scanner = table.getScanner(s)) {
@@ -169,9 +169,9 @@ public class HBaseRepository implements Serializable {
 					table.addFamily(new HColumnDescriptor(HBaseConfig.ANALYSIS_COL_FAMILY).setCompressionType(Algorithm.NONE));
 				}
 				
-				LOGGER.info("================== Creating table ... =====================: " + tableName);
+				LOGGER.info("================== Creating table "+ tableName +" ... =====================: " + tableName);
 				admin.createTable(table);
-				LOGGER.info("================== Table created !!! ===================== ");
+				LOGGER.info("================== Created table '"+ tableName +"' !!! ===================== ");
 			}
 		} catch (IOException ex) {
 			LOGGER.error(ex.getMessage());

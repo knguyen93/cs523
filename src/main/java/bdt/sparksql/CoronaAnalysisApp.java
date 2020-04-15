@@ -43,48 +43,60 @@ public class CoronaAnalysisApp {
 	}
 
 	public static void printTotalCasesByDate() {
-		String query =  " SELECT date, COUNT(*) AS count FROM " + HBaseConfig.TABLE_NAME 
+		String query =  " SELECT date, SUM(confirmedCases) AS count FROM " + HBaseConfig.TABLE_NAME 
 					  + " GROUP BY date"
 					  + " ORDER BY date DESC ";
 		
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		sqlDF.show();
+		LOGGER.info("\n================== Query String: " + query);
+		
+		LOGGER.info("================== PERSISTING ANALYSIS DATA ... =====================");
 		List<CaseReportByDate> records = sqlDF.as(Encoders.bean(CaseReportByDate.class)).collectAsList();
 		HBaseRepository.getInstance().saveAnalysis(records, AnalysisTable.CASES_BY_DATE);
+		LOGGER.info("================== PERSISTED ANALYSIS DATA at table " + AnalysisTable.CASES_BY_DATE);
 	}
 	
 	public static void printTotalCasesByCountry() {
-		String query =  " SELECT country, COUNT(*) AS count FROM " + HBaseConfig.TABLE_NAME 
+		String query =  " SELECT country, SUM(confirmedCases) AS count FROM " + HBaseConfig.TABLE_NAME 
 				  + " GROUP BY country"
 				  + " ORDER BY country DESC ";
 		
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		sqlDF.show();
+		LOGGER.info("\n================== Query String: " + query);
+		
+		LOGGER.info("================== PERSISTING ANALYSIS DATA ... =====================");
 		List<CaseReportByCountry> records = sqlDF.as(Encoders.bean(CaseReportByCountry.class)).collectAsList();
 		HBaseRepository.getInstance().saveAnalysis(records, AnalysisTable.CASES_BY_COUNTRY);
+		LOGGER.info("================== PERSISTED ANALYSIS DATA at table " + AnalysisTable.CASES_BY_COUNTRY);
 	}
 	
 	public static void generateTotalCasesPilot() {
 		LOGGER.info("================== GENERATE TOTAL CASES PILOT DATA ... =====================");
-		String query =  " SELECT country, date, COUNT(*) AS count FROM " + HBaseConfig.TABLE_NAME 
+		String query =  " SELECT country, date, SUM(confirmedCases) AS count FROM " + HBaseConfig.TABLE_NAME 
 				  + " GROUP BY country, date"
 				  + " ORDER BY country DESC, date DESC ";
 		
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		List<CaseReportByCountryDate> records = sqlDF.as(Encoders.bean(CaseReportByCountryDate.class)).collectAsList();
 		HBaseRepository.getInstance().saveAnalysis(records, AnalysisTable.PILOT);
+		LOGGER.info("================== PERSISTED ANALYSIS DATA at table " + AnalysisTable.PILOT);
 	}
 	
 	public static void printCasesForCountryByDates() {
-		String query =  " SELECT country, date, COUNT(*) AS count FROM " + HBaseConfig.TABLE_NAME 
+		String query =  " SELECT country, date, SUM(confirmedCases) AS count FROM " + HBaseConfig.TABLE_NAME 
 				  + " GROUP BY country, date"
 				  + " ORDER BY country DESC, date DESC ";
 		
 		Dataset<Row> sqlDF = sparkSession.sql(query);
 		sqlDF.show();
+		LOGGER.info("\n================== Query String: " + query);
 		
+		LOGGER.info("================== PERSISTING ANALYSIS DATA ... =====================");
 		List<CaseReportByCountryDate> records = sqlDF.as(Encoders.bean(CaseReportByCountryDate.class)).collectAsList();
 		HBaseRepository.getInstance().saveAnalysis(records, AnalysisTable.CASES_BY_COUNTRY_DATE);
+		LOGGER.info("================== PERSISTED ANALYSIS DATA at table " + AnalysisTable.CASES_BY_COUNTRY_DATE);
 	}
 	
 	public static void saveRecordsToFile(String tableName, List<? extends CaseReport> records) {
@@ -104,6 +116,7 @@ public class CoronaAnalysisApp {
 	public static void printCustomQuery(String queryStr) {
 		Dataset<Row> sqlDF = sparkSession.sql(queryStr);
 		sqlDF.show();
+		LOGGER.info("\n================== Query String: " + queryStr);
 	}
 	
 	private static void printMenu() {
