@@ -19,7 +19,9 @@ import bdt.model.CoronaRecord;
 import bdt.sparksql.CoronaAnalysisApp;
 import bdt.utils.RecordParser;
 import kafka.serializer.StringDecoder;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class KConsumer {
 
 	public static void startConsumer() throws InterruptedException {
@@ -40,7 +42,11 @@ public class KConsumer {
 			
 			recoredRDDs.foreachRDD(rdd -> {
 				if (!rdd.isEmpty()) {
-					if ("$$$".equals(rdd.map(r -> r.getCountry()).first())) {
+					String line = rdd.map(r -> r.getCountry()).first();
+					if (line != null && line.length() > 2 && line.length() < 10) {
+						log.info("=========================== RECEIVED TOKEN : " + line);
+					}
+					if ("$$$".equals(line)) {
 						CoronaAnalysisApp.init();
 						CoronaAnalysisApp.generateTotalCasesPilot();
 					} else {
