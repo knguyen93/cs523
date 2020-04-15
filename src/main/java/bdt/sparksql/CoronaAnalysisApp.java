@@ -77,7 +77,7 @@ public class CoronaAnalysisApp {
 	
 	public static void generateTotalCasesPilot() {
 		LOGGER.info("================== GENERATE TOTAL CASES PILOT DATA ... =====================");
-		String query =  " SELECT country, date, SUM(confirmedCases) AS confirmedCases FROM " + HBaseConfig.TABLE_NAME 
+		String query =  " SELECT country, date, SUM(confirmedCases) AS confirmedCases, 0 AS recoveredCases, 0 AS deathCases FROM " + HBaseConfig.TABLE_NAME 
 				  + " GROUP BY country, date"
 				  + " ORDER BY country DESC, date DESC ";
 		
