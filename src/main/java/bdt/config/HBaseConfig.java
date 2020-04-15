@@ -17,6 +17,7 @@ public class HBaseConfig {
 
 	public static final String COL_STATE = "state";
 	public static final String COL_COUNTRY = "country";
+	public static final String COL_COUNTY = "county";
 	public static final String COL_DATE = "date";
 	public static final String COL_CONFIRMED_CASES = "confirmedCases";
 	public static final String COL_DEATH_CASES = "deathCases";

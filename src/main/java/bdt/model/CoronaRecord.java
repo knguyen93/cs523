@@ -18,8 +18,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CoronaRecord implements Serializable {
 	private static final long serialVersionUID = 1L;
-	private String state;
 	private String country;
+	private String state;
+	private String county;
 	private LocalDate date;
 	private int confirmedCases;
 	private int deathCases;

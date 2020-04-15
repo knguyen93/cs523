@@ -49,27 +49,30 @@ public class RecordParser {
 	public static CoronaRecord parse(String line) {
 		try {
 			String[] fields = PARSER.parseLine(line);
-
-			if ("$$$".equals(fields[0])) {
-				return new CoronaRecord("$$$");
-			}
 			
-			if (fields.length < 6)
+			if (fields.length < 7)
 				return null;
 
-			// Headers: Province/State, Country/Region, Last Update, Confirmed, Deaths, Recovered, Latitude, Longitude
-			String state = fields[0];
-			String country = fields[1];
-			LocalDate date = parseDate(fields[2]);
-			int confirmedCases = StringUtils.isNotBlank(fields[3]) ? Integer.parseInt(fields[3]) : 0;
-			int deathCases = StringUtils.isNotBlank(fields[4]) ? Integer.parseInt(fields[4]) : 0;
-			int recoveredCases = StringUtils.isNotBlank(fields[5]) ? Integer.parseInt(fields[5]) : 0;
+			// Headers: Country/Region, Province/State, County, Last Update, Confirmed, Deaths, Recovered
+			String country = fields[0];
+			String state = fields[1];
+			String county = fields[2];
+			LocalDate date = parseDate(fields[3]);
+			int confirmedCases = StringUtils.isNotBlank(fields[4]) ? Integer.parseInt(fields[4]) : 0;
+			int deathCases = StringUtils.isNotBlank(fields[5]) ? Integer.parseInt(fields[5]) : 0;
+			int recoveredCases = StringUtils.isNotBlank(fields[6]) ? Integer.parseInt(fields[6]) : 0;
 
-			return new CoronaRecord(state, country, date, confirmedCases, deathCases, recoveredCases);
+			return new CoronaRecord(parseCountry(country), state, county, date, confirmedCases, deathCases, recoveredCases);
 		} catch (Exception e) {
 			LOGGER.warn("Cannot parse record. [" + line + "] " + e);
 			return null;
 		}
+	}
+	
+	private static String parseCountry(String country) {
+		if (country != null && country.toUpperCase().contains("CHINA"))
+			return "China";
+		return country;
 	}
 
 	public static LocalDate parseDate(String value) {

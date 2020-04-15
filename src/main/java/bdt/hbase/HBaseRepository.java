@@ -188,7 +188,14 @@ public class HBaseRepository implements Serializable {
 		map.put("United State", "US");
 		map.put("Japan", "JP");
 		map.put("South Korea", "KR");
-		map.put("Mainland China", "CN");
+		map.put("China", "CN");
+		map.put("Italy", "IT");
+		map.put("Spain", "ES");
+		map.put("France", "FR");
+		map.put("Iran", "IR");
+		map.put("Germany", "DE");
+		map.put("Turkey", "TR");
+		map.put("Belgium", "BE");
 		return map;
 	}
 	
@@ -233,12 +240,13 @@ public class HBaseRepository implements Serializable {
 
 		byte[] country = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_COUNTRY);
 		byte[] state = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_STATE);
+		byte[] county = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_COUNTY);
 		byte[] date = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_DATE);
 		byte[] confirmedCases = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_CONFIRMED_CASES);
 		byte[] recoveredCases = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_RECOVERED_CASES);
 		byte[] deathCases = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_DEATH_CASES);
 
-		return new CoronaRecord(state.toString(), country.toString(), LocalDate.parse(date.toString(), FORMATER),
+		return new CoronaRecord(Bytes.toString(country), Bytes.toString(state), Bytes.toString(county), LocalDate.parse(date.toString(), FORMATER),
 						Bytes.toInt(confirmedCases), Bytes.toInt(deathCases), Bytes.toInt(recoveredCases));
 	}
 	
@@ -249,12 +257,13 @@ public class HBaseRepository implements Serializable {
 
 		byte[] country = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_COUNTRY);
 		byte[] state = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_STATE);
+		byte[] county = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_COUNTY);
 		byte[] date = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_DATE);
 		byte[] confirmedCases = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_CONFIRMED_CASES);
 		byte[] recoveredCases = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_RECOVERED_CASES);
 		byte[] deathCases = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_DEATH_CASES);
 
-		return new HBCoronaRecord(Bytes.toString(state), Bytes.toString(country), Bytes.toString(date),
+		return new HBCoronaRecord(Bytes.toString(country), Bytes.toString(state), Bytes.toString(county), Bytes.toString(date),
 						Bytes.toInt(confirmedCases), Bytes.toInt(recoveredCases), Bytes.toInt(deathCases));
 	}
 
@@ -262,6 +271,7 @@ public class HBaseRepository implements Serializable {
 		Put put = new Put(Bytes.toBytes(rowKey));
 		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_COUNTRY.getBytes(), parseValue(record.getCountry()));
 		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_STATE.getBytes(), parseValue(record.getState()));
+		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_COUNTY.getBytes(), parseValue(record.getCounty()));
 		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_DATE.getBytes(), parseValue(record.getDate()));
 		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_CONFIRMED_CASES.getBytes(), parseValue(record.getConfirmedCases()));
 		put.addImmutable(HBaseConfig.COLUMN_FAMILY.getBytes(), HBaseConfig.COL_RECOVERED_CASES.getBytes(), parseValue(record.getRecoveredCases()));
