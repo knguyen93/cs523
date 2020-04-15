@@ -160,19 +160,22 @@ public class HBaseRepository implements Serializable {
 	public void createAnalysisTable(String tableName) {
 		try (Admin admin = HBaseConfig.getHBaseConnection().getAdmin()) {
 			TableName tblName = TableName.valueOf(tableName);
-			if (!admin.tableExists(tblName)) {
-				HTableDescriptor table = new HTableDescriptor(tblName);
-				
-				if (AnalysisTable.PILOT.value().equals(tableName)) {
-					table.addFamily(new HColumnDescriptor(HBaseConfig.COL_COUNTRY).setCompressionType(Algorithm.NONE));
-				} else {
-					table.addFamily(new HColumnDescriptor(HBaseConfig.ANALYSIS_COL_FAMILY).setCompressionType(Algorithm.NONE));
-				}
-				
-				LOGGER.info("================== Creating table "+ tableName +" ... =====================: " + tableName);
-				admin.createTable(table);
-				LOGGER.info("================== Created table '"+ tableName +"' !!! ===================== ");
+			// Clean up table before persist new data
+			if (admin.tableExists(tblName)) {
+				admin.disableTable(tblName);
+				admin.deleteTable(tblName);
 			}
+			HTableDescriptor table = new HTableDescriptor(tblName);
+				
+			if (AnalysisTable.PILOT.value().equals(tableName)) {
+				table.addFamily(new HColumnDescriptor(HBaseConfig.COL_COUNTRY).setCompressionType(Algorithm.NONE));
+			} else {
+				table.addFamily(new HColumnDescriptor(HBaseConfig.ANALYSIS_COL_FAMILY).setCompressionType(Algorithm.NONE));
+			}
+				
+			LOGGER.info("================== Creating table "+ tableName +" ... =====================: " + tableName);
+			admin.createTable(table);
+			LOGGER.info("================== Created table '"+ tableName +"' !!! ===================== ");
 		} catch (IOException ex) {
 			LOGGER.error(ex.getMessage());
 		}
@@ -190,21 +193,25 @@ public class HBaseRepository implements Serializable {
 	
 	private Put generatePilotReportPut(CaseReportByCountryDate record) {
 		Put put = new Put(Bytes.toBytes(record.getDate().replaceAll("/", "")));
-		put.addImmutable(HBaseConfig.COL_COUNTRY.getBytes(), parseValue(record.getCountry()), parseValue(String.valueOf(record.getCount())));
+		put.addImmutable(HBaseConfig.COL_COUNTRY.getBytes(), parseValue(record.getCountry()), parseValue(String.valueOf(record.getConfirmedCases())));
 		return put;
 	}
 	
 	private Put generateReportPut(CaseReportByDate record) {
 		Put put = new Put(Bytes.toBytes(record.getDate()));
 		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_DATE.getBytes(), parseValue(record.getDate()));
-		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNT.getBytes(), parseValue(String.valueOf(record.getCount())));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_CONFIRMED_CASES.getBytes(), parseValue(String.valueOf(record.getConfirmedCases())));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_RECOVERED_CASES.getBytes(), parseValue(String.valueOf(record.getRecoveredCases())));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_DEATH_CASES.getBytes(), parseValue(String.valueOf(record.getDeathCases())));
 		return put;
 	}
 	
 	private Put generateReportPut(CaseReportByCountry record) {
 		Put put = new Put(Bytes.toBytes(record.getCountry()));
 		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNTRY.getBytes(), parseValue(record.getCountry()));
-		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNT.getBytes(), parseValue(String.valueOf(record.getCount())));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_CONFIRMED_CASES.getBytes(), parseValue(String.valueOf(record.getConfirmedCases())));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_RECOVERED_CASES.getBytes(), parseValue(String.valueOf(record.getRecoveredCases())));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_DEATH_CASES.getBytes(), parseValue(String.valueOf(record.getDeathCases())));
 		return put;
 	}
 	
@@ -212,7 +219,9 @@ public class HBaseRepository implements Serializable {
 		Put put = new Put(Bytes.toBytes(record.getCountry() + record.getDate()));
 		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNTRY.getBytes(), parseValue(record.getCountry()));
 		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_DATE.getBytes(), parseValue(record.getDate()));
-		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_COUNT.getBytes(), parseValue(String.valueOf(record.getCount())));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_CONFIRMED_CASES.getBytes(), parseValue(String.valueOf(record.getConfirmedCases())));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_RECOVERED_CASES.getBytes(), parseValue(String.valueOf(record.getRecoveredCases())));
+		put.addImmutable(HBaseConfig.ANALYSIS_COL_FAMILY.getBytes(), HBaseConfig.COL_DEATH_CASES.getBytes(), parseValue(String.valueOf(record.getDeathCases())));
 		return put;
 	}
 
@@ -245,7 +254,7 @@ public class HBaseRepository implements Serializable {
 		byte[] deathCases = getValue(result, HBaseConfig.COLUMN_FAMILY, HBaseConfig.COL_DEATH_CASES);
 
 		return new HBCoronaRecord(Bytes.toString(state), Bytes.toString(country), Bytes.toString(date),
-						Bytes.toInt(confirmedCases), Bytes.toInt(deathCases), Bytes.toInt(recoveredCases));
+						Bytes.toInt(confirmedCases), Bytes.toInt(recoveredCases), Bytes.toInt(deathCases));
 	}
 
 	private Put generatePut(String rowKey, CoronaRecord record) {

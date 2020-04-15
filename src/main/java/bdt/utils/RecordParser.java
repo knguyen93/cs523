@@ -2,6 +2,7 @@ package bdt.utils;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.spark.api.java.Optional;
@@ -106,8 +108,11 @@ public class RecordParser {
 	
 	public static CaseReportByCountryDate transformPilot(CaseReportByCountryDate record, Map<String, String> transformMap) {
 		CaseReportByCountryDate result = new CaseReportByCountryDate();
-		result.setCount(record.getCount());
-		result.setDate(record.getDate());
+		try {
+			BeanUtils.copyProperties(result, record);
+		} catch (IllegalAccessException | InvocationTargetException e) {
+			LOGGER.warn("Cannot transform record. " + e);
+		}
 		result.setCountry(Optional.ofNullable(transformMap.get(record.getCountry())).orElse(record.getCountry()));
 		return result;
 	}
