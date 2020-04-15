@@ -46,11 +46,11 @@ public class KConsumer {
 					log.info("=========================== RECEIVED LINE : [[[[" + rdd.first() + "]]]]");
 					log.info("=========================== RECEIVED LINE getCountry: [[[[" + rdd.first().getCountry() + "]]]]");
 					log.info("=========================== RECEIVED LINE getCountry: [[[[" + rdd.first().toString() + "]]]]");
-					String line = rdd.toString();
+					String line = rdd.first().getCountry();
 					if (line != null && line.length() > 2 && line.length() < 10) {
 						log.info("=========================== RECEIVED TOKEN : " + line);
 					}
-					if ("$$$".equals(line)) {
+					if (line.contains("$$$")) {
 						CoronaAnalysisApp.init();
 						CoronaAnalysisApp.generateTotalCasesPilot();
 					} else {
