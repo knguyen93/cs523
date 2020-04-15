@@ -162,7 +162,7 @@ public class HBaseRepository implements Serializable {
 		try (Admin admin = HBaseConfig.getHBaseConnection().getAdmin()) {
 			TableName tblName = TableName.valueOf(tableName);
 			// Clean up table before persist new data
-			if (admin.tableExists(tblName)) {
+			if (!AnalysisTable.PILOT.value().equals(tableName) && admin.tableExists(tblName)) {
 				admin.disableTable(tblName);
 				admin.deleteTable(tblName);
 			}
