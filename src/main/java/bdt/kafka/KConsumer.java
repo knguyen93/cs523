@@ -41,15 +41,12 @@ public class KConsumer {
 			
 			recoredRDDs.foreachRDD(rdd -> {
 				if (!rdd.isEmpty()) {
+					repo.save(hadoopConf, rdd);
 					
-					String line = rdd.first().getCountry();
-					log.info("__LOG__________" + line);
-					if (line.contains("$$$")) {
-						CoronaAnalysisApp.init();
-						CoronaAnalysisApp.generateTotalCasesPilot();
-					} else {
-						repo.save(hadoopConf, rdd);
-					}
+					// Refresh the visualization
+					log.info("============= Refreshing the visualization =========");
+					CoronaAnalysisApp.init();
+					CoronaAnalysisApp.generateTotalCasesPilot();
 				}
 			});
 

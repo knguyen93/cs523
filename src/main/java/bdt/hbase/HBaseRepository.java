@@ -92,6 +92,7 @@ public class HBaseRepository implements Serializable {
 	
 	public void save(Configuration config, JavaRDD<CoronaRecord> record) throws MasterNotRunningException, Exception {
 		Job job = Job.getInstance(config);
+		LOGGER.info("in SAVE ======== " + record.count());
 		job.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, HBaseConfig.TABLE_NAME);
 		job.setOutputFormatClass(TableOutputFormat.class);
 		JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = record.mapToPair(new MyPair());
@@ -301,7 +302,6 @@ public class HBaseRepository implements Serializable {
 					.map(v -> v.replaceAll("\\s+", ""))
 					.collect(Collectors.joining("|"));
 					Put put = generatePut(key, record);
-					
 					return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
 		}
 		
