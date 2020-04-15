@@ -37,19 +37,13 @@ public class KConsumer {
 					String.class, StringDecoder.class, StringDecoder.class, kafkaParams, topicName);
 			
 			JavaDStream<CoronaRecord> recoredRDDs = kafkaSparkPairInputDStream
-					.map(RecordParser::parse)
-					.filter(record -> record != null);
+					.map(RecordParser::parse).filter(r -> r != null);
 			
 			recoredRDDs.foreachRDD(rdd -> {
 				if (!rdd.isEmpty()) {
-					log.info("=========================== RECEIVED LINE : [[[[" + rdd + "]]]]");
-					log.info("=========================== RECEIVED LINE : [[[[" + rdd.first() + "]]]]");
-					log.info("=========================== RECEIVED LINE getCountry: [[[[" + rdd.first().getCountry() + "]]]]");
-					log.info("=========================== RECEIVED LINE getCountry: [[[[" + rdd.first().toString() + "]]]]");
+					
 					String line = rdd.first().getCountry();
-					if (line != null && line.length() > 2 && line.length() < 10) {
-						log.info("=========================== RECEIVED TOKEN : " + line);
-					}
+					log.info("__LOG__________" + line);
 					if (line.contains("$$$")) {
 						CoronaAnalysisApp.init();
 						CoronaAnalysisApp.generateTotalCasesPilot();
