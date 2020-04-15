@@ -307,12 +307,13 @@ public class HBaseRepository implements Serializable {
 		@Override
 		public Tuple2<ImmutableBytesWritable, Put> call(CoronaRecord record) throws Exception {
 			String date = record.getDate() != null ? record.getDate().format(FORMATER_2) : "";
-			String key = Stream.of(record.getCountry(), record.getState(), date)
+			String key = Stream.of(record.getCountry(), record.getState(), record.getCounty(), date)
 					.filter(StringUtils::isNotBlank)
 					.map(v -> v.replaceAll("\\s+", ""))
 					.collect(Collectors.joining("|"));
-					Put put = generatePut(key, record);
-					return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
+			
+			Put put = generatePut(key, record);
+			return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
 		}
 		
 	};
