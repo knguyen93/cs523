@@ -42,7 +42,11 @@ public class KConsumer {
 			
 			recoredRDDs.foreachRDD(rdd -> {
 				if (!rdd.isEmpty()) {
-					String line = rdd.map(r -> r.getCountry()).first();
+					log.info("=========================== RECEIVED LINE : [[[[" + rdd + "]]]]");
+					log.info("=========================== RECEIVED LINE : [[[[" + rdd.first() + "]]]]");
+					log.info("=========================== RECEIVED LINE getCountry: [[[[" + rdd.first().getCountry() + "]]]]");
+					log.info("=========================== RECEIVED LINE getCountry: [[[[" + rdd.first().toString() + "]]]]");
+					String line = rdd.toString();
 					if (line != null && line.length() > 2 && line.length() < 10) {
 						log.info("=========================== RECEIVED TOKEN : " + line);
 					}
@@ -59,5 +63,4 @@ public class KConsumer {
 			streamingContext.awaitTermination();
 		}
 	}
-	
 }
