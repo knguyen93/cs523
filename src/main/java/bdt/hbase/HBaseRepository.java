@@ -90,13 +90,18 @@ public class HBaseRepository implements Serializable {
 		}
 	}
 	
-	public void save(Configuration config, JavaRDD<CoronaRecord> record) throws MasterNotRunningException, Exception {
+	public void save(Configuration config, JavaRDD<CoronaRecord> record) 
+			throws MasterNotRunningException, Exception {
+		
 		Job job = Job.getInstance(config);
-		LOGGER.info("in SAVE ======== " + record.count());
+		LOGGER.info("============ SAVING RECORDS .... ======== " + record.count());
 		job.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, HBaseConfig.TABLE_NAME);
 		job.setOutputFormatClass(TableOutputFormat.class);
+		
 		JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = record.mapToPair(new MyPair());
+		
 		hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());
+		LOGGER.info("============ RECORDS ARE SAVED !!! ======== " + record.count());
 	}
 	
 	public void saveAnalysis(List<? extends CaseReport> records, AnalysisTable tableName) {

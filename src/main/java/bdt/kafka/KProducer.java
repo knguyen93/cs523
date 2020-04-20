@@ -21,8 +21,8 @@ import org.slf4j.LoggerFactory;
 
 import bdt.config.KafkaConfig;
 
-public class KReducer {
-	private static final Logger LOGGER = LoggerFactory.getLogger(KReducer.class);
+public class KProducer {
+	private static final Logger LOGGER = LoggerFactory.getLogger(KProducer.class);
 	
 	public static void main(String[] args) {
 		BasicConfigurator.configure();

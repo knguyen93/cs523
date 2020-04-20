@@ -43,7 +43,8 @@ public class CoronaAnalysisApp {
 	}
 
 	public static void printTotalCasesByDate() {
-		String query =  " SELECT date, SUM(confirmedCases) AS confirmedCases, SUM(recoveredCases) AS recoveredCases, SUM(deathCases) AS deathCases "
+		String query =  " SELECT date, SUM(confirmedCases) AS confirmedCases, "
+					  + "SUM(recoveredCases) AS recoveredCases, SUM(deathCases) AS deathCases "
 					  + " FROM " + HBaseConfig.TABLE_NAME 
 					  + " GROUP BY date"
 					  + " ORDER BY date DESC ";
@@ -59,7 +60,8 @@ public class CoronaAnalysisApp {
 	}
 	
 	public static void printTotalCasesByCountry() {
-		String query =  " SELECT country, SUM(confirmedCases) AS confirmedCases, SUM(recoveredCases) AS recoveredCases, SUM(deathCases) AS deathCases "
+		String query =  " SELECT country, SUM(confirmedCases) AS confirmedCases, "
+				  + "SUM(recoveredCases) AS recoveredCases, SUM(deathCases) AS deathCases "
 				  + " FROM " + HBaseConfig.TABLE_NAME 
 				  + " GROUP BY country"
 				  + " ORDER BY country DESC ";
